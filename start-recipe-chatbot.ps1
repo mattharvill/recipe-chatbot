@@ -1,5 +1,5 @@
 # Go to project directory
-Set-Location "C:\Users\mh\OneDrive\Documents\GitHub\recipe-chatbot"
+Set-Location "C:\Users\ma33h\OneDrive\Documents\GitHub\recipe-chatbot"
 
 # Activate virtual environment
 & .venv\Scripts\Activate.ps1

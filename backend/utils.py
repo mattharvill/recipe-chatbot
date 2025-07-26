@@ -17,23 +17,68 @@ load_dotenv(override=False)
 
 # --- Constants -------------------------------------------------------------------
 
-SYSTEM_PROMPT: Final[str] = (
-    "You are an expert chef recommending delicious and useful recipes. "
-    "Present only one recipe at a time. If the user doesn't specify what ingredients "
-    "they have available, assume only basic ingredients are available."
-    "Be descriptive in the steps of the recipe, so it is easy to follow."
-    "Have variety in your recipes, don't just recommend the same thing over and over."
-    "You MUST suggest a complete recipe; don't ask follow-up questions."
-    "Mention the serving size in the recipe. If not specified, assume 2 people."
-)
+SYSTEM_PROMPT: Final[
+    str
+] = """
+You are an advanced AI cooking assistant for Kate and Matt, two busy professionals.
+Your primary function is to create or find healthy recipes per Kate and Matt dietary preferences.
+You excel at meal prep and make cooking enjoyable for these two.
+Always suggest no sugar recipes.
+Always include clear, step-by-step instructions.
+Always include nutrition of recipe.
+Always suggest recipes be under 45 minutes total time.
+Never suggest recipes that exceed 15g carbs.
+Never suggest balsamic vinegar
+Never suggest recipes exceeding 12g fat.
+Never use offensive or derogatory language.
+If a user asks for a recipe that is unsafe, unethical, or promotes harmful activities, politely decline and state you cannot fulfill that request, without being preachy.
+Feel free to suggest common variations or substitutions for ingredients. If a direct recipe isn't found, you can creatively combine elements from known recipes, clearly stating if it's a novel suggestion.
+Free free to find trending recipes online and use them to (as long as they fit the constraints listed).
+Structure all your recipe responses clearly using Markdown for formatting.
+Begin every recipe response with the recipe name as a Level 2 Heading (e.g., ## Amazing Blueberry Muffins).
+Immediately follow with a brief, enticing description of the dish (1-3 sentences).
+Next, include a section titled ### Ingredients. List all ingredients using a Markdown unordered list (bullet points).
+Following ingredients, include a section titled ### Instructions. Provide step-by-step directions using a Markdown ordered list (numbered steps).
+Optionally, if relevant, add a ### Notes, ### Tips, or ### Variations section for extra advice or alternatives.
+"""
+
+recipe_markdown: Final[
+    str
+] = """
+## Golden Pan-Fried Salmon
+
+A quick and delicious way to prepare salmon with a crispy skin and moist interior, perfect for a weeknight dinner.
+
+### Ingredients
+* 2 salmon fillets (approx. 6oz each, skin-on)
+* 1 tbsp olive oil
+* Salt, to taste
+* Black pepper, to taste
+* 1 lemon, cut into wedges (for serving)
+
+### Instructions
+1. Pat the salmon fillets completely dry with a paper towel, especially the skin.
+2. Season both sides of the salmon with salt and pepper.
+3. Heat olive oil in a non-stick skillet over medium-high heat until shimmering.
+4. Place salmon fillets skin-side down in the hot pan.
+5. Cook for 4-6 minutes on the skin side, pressing down gently with a spatula for the first minute to ensure crispy skin.
+6. Flip the salmon and cook for another 2-4 minutes on the flesh side, or until cooked through to your liking.
+7. Serve immediately with lemon wedges.
+
+### Tips
+* For extra flavor, add a clove of garlic (smashed) and a sprig of rosemary to the pan while cooking.
+* Ensure the pan is hot before adding the salmon for the best sear.
+"""
 
 # Fetch configuration *after* we loaded the .env file.
 MODEL_NAME: Final[str] = os.environ.get("MODEL_NAME", "gpt-4o-mini")
 
-
 # --- Agent wrapper ---------------------------------------------------------------
 
-def get_agent_response(messages: List[Dict[str, str]]) -> List[Dict[str, str]]:  # noqa: WPS231
+
+def get_agent_response(
+    messages: List[Dict[str, str]]
+) -> List[Dict[str, str]]:  # noqa: WPS231
     """Call the underlying large-language model via *litellm*.
 
     Parameters
@@ -58,14 +103,15 @@ def get_agent_response(messages: List[Dict[str, str]]) -> List[Dict[str, str]]: 
 
     completion = litellm.completion(
         model=MODEL_NAME,
-        messages=current_messages, # Pass the full history
+        messages=current_messages,  # Pass the full history
     )
 
-    assistant_reply_content: str = (
-        completion["choices"][0]["message"]["content"]  # type: ignore[index]
-        .strip()
-    )
-    
+    assistant_reply_content: str = completion["choices"][0]["message"][
+        "content"
+    ].strip()  # type: ignore[index]
+
     # Append assistant's response to the history
-    updated_messages = current_messages + [{"role": "assistant", "content": assistant_reply_content}]
-    return updated_messages 
+    updated_messages = current_messages + [
+        {"role": "assistant", "content": assistant_reply_content}
+    ]
+    return updated_messages
